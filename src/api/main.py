@@ -1,29 +1,51 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
+from pydantic import BaseModel
 
 app = FastAPI()
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 MONGO_URL = "mongodb://localhost:27017"
 client = AsyncIOMotorClient(MONGO_URL)
 database = client["tai"]
 collection = database["tasks"]
 
-@app.get("/")
-async def read_root():
-    return await collection.find()
 
+class Task(BaseModel):
+    _id: int
+    title: str
+
+@app.get("/tasks/")
+async def read_tasks():
+    data = []
+    async for item in collection.find():
+        print(item)
+        data.append(item)
+    return data
 
 @app.get("/tasks/{item_id}")
-async def read_item(item_id: int, q: str = None):
-    return await collection.find_one({"_id": item_id})
+async def read_task(item_id: int, q: str = None):
+    return collection.find_one({"_id": item_id});
 
+@app.post("/tasks/")
+async def insert_task(task: Task):
+    await collection.insert_one({"_id": task._id, "title":task.title})
 
-@app.get("/tasks/add/{item_id}")
-async def inser_item(item_id: int, q: str = None):
-    await collection.insert_one({"_id": item_id})
+@app.put("/tasks/{item_id}")
+async def edit_task(item_id: int, task: Task):
+    await collection.find_one_and_update({"_id": item_id, "title":task.title})
 
-
-@app.get("/tasks/delete/{item_id}")
-async def delete_item(item_id: int, q: str = None):
-    await collection.delete_one({"_id": item_id})
+@app.delete("/tasks/{item_id}")
+async def delete_task(item_id: int):
+    await collection.find_one_and_delete({"_id": item_id})
 
