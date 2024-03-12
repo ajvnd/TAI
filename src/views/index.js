@@ -12,7 +12,8 @@ $(function ()
                 return $.ajax({
                     url: SERVICE_URL,
                     method: "POST",
-                    data: JSON.parse(values)
+                    contentType: "application/json",
+                    data: JSON.stringify(values)
                     });
             },
             update: (key, values) => {
@@ -20,12 +21,7 @@ $(function ()
                     url: SERVICE_URL + "/" + encodeURIComponent(key),
                     method: "PUT",
                     contentType: "application/json",
-                    data: JSON.parse({
-                        task:{
-                        _id:key,
-                        title:values.title
-                        }
-                    })
+                    data: JSON.stringify(values)
                 });
             },
             remove: (key) => {
