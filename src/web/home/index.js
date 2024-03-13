@@ -4,7 +4,7 @@ $(function ()
 
     $("#tasksGrid").dxDataGrid({
         dataSource: new DevExpress.data.CustomStore({
-            key: "_id",
+            key: "id",
             load: function () {
                 return $.getJSON(SERVICE_URL);
             },
@@ -41,7 +41,7 @@ $(function ()
             allowDeleting: true,
           },
         columns: [
-            "_id",
+            "id",
             "title",
         ]
     });
