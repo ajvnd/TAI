@@ -7,10 +7,10 @@ router = APIRouter()
 
 @router.get("/projects", status_code=status.HTTP_200_OK)
 def get_projects(db: Session = Depends(models.get_db)):
-    return repositories.SubTask(db).get_sub_tasks()
+    return repositories.Project(db).get_projects()
 
 
-@router.get("/project/{project_id}", status_code=status.HTTP_200_OK)
+@router.get("/projects/{project_id}", status_code=status.HTTP_200_OK)
 def get_project(project_id: int, response: Response, db: Session = Depends(models.get_db)):
     project = repositories.Project(db).get_project(project_id)
     if not project:

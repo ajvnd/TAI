@@ -15,17 +15,22 @@ app.add_middleware(
 models.Base.metadata.create_all(bind=models.engine)
 
 # Include endpoints in the main application
+app.include_router(routers.project.router)
 app.include_router(routers.task.router)
 app.include_router(routers.sub_task.router)
 
 db = models.SessionLocal()
 try:
-    db.add(models.Project.generate_projects())
+    if db.query(models.Project).count() == 0:
+        db.add(models.Project.generate_projects())
+        db.commit()
 
-    db.add(models.Task.generate_tasks())
-    db.commit()
+    if db.query(models.Task).count() == 0:
+        db.add(models.Task.generate_tasks())
+        db.commit()
 
-    db.bulk_save_objects(models.SubTask.generate_sub_tasks())
-    db.commit()
+    if db.query(models.SubTask).count() == 0:
+        db.bulk_save_objects(models.SubTask.generate_sub_tasks())
+        db.commit()
 finally:
     db.close()

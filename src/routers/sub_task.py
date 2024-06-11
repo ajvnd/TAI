@@ -32,6 +32,11 @@ def update_sub_task(sub_task_id: int, sub_task: schemas.SubTaskUpdate, db: Sessi
     repositories.SubTask(db).update_sub_task(sub_task)
 
 
+@router.put("/sub_tasks/{sub_task_id}/progression", status_code=status.HTTP_204_NO_CONTENT)
+def update_sub_task_progression(sub_task_id: int, sub_task_progression: schemas.SubTaskProgression,db: Session = Depends(models.get_db)):
+    repositories.SubTask(db).update_sub_task_progression(sub_task_id, sub_task_progression.spend)
+
+
 @router.delete("/sub_tasks/{sub_task_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_sub_task(sub_task_id: int, response: Response, db: Session = Depends(models.get_db)):
     sub_task = repositories.SubTask(db).get_sub_task(sub_task_id)

@@ -36,31 +36,6 @@ $(function () {
         height: "100vh",
         width: "100vw",
         showColumnLines: true,
-        toolbar: {
-            visible: true,
-            items: ["addRowButton", {
-                name: "x",
-                location: "before",
-                widget: "dxSelectBox",
-                options: {
-                    width: "30vw",
-                    dataSource: new DevExpress.data.CustomStore({
-                        key: "id",
-                        load: function () {
-                            return $.getJSON(Project_URL);
-                        },
-                        insert: function (values) {
-                            return $.ajax({
-                                url: Project_URL,
-                                method: "POST",
-                                contentType: "application/json",
-                                data: JSON.stringify(values)
-                            });
-                        },
-                    }),
-                }
-            },]
-        },
         paging: {
             enabled: true,
             pageSize: 10,
@@ -84,11 +59,11 @@ $(function () {
             {
                 name: "id",
                 dataField: "id",
+                visible: false,
                 formItem: {
                     visible: false
                 },
                 alignment: "center",
-                width: "10vh"
             },
             {
                 name: "title",
@@ -159,16 +134,19 @@ $(function () {
                         allowAdding: true,
                         allowUpdating: true,
                         allowDeleting: true,
+                        form: {
+                            labelLocation: "left"
+                        }
                     },
                     columns: [
                         {
                             name: "id",
                             dataField: "id",
+                            visible: false,
                             formItem: {
                                 visible: false
                             },
                             alignment: "center",
-                            width: "12vh"
                         },
                         {
                             name: "title",
@@ -177,37 +155,58 @@ $(function () {
                             alignment: "center",
                         },
                         {
-                            name: "start_date",
-                            dataField: 'start_date',
-                            dataType: 'date',
-                            alignment: "center"
+                            name: "duration",
+                            dataField: "duration",
+                            dataType: "number",
+                            alignment: "center",
+                            visible: false,
                         },
                         {
-                            name: "due_date",
-                            dataField: 'due_date',
-                            dataType: 'date',
-                            calculateDisplayValue(f) {
-                                const givenDate = new Date(f.due_date).getTime();  // Convert given date to timestamp
-                                const now = Date.now();  // Get current timestamp
-
-                                if (givenDate < now) {
-                                    return "The time is finished";
-                                } else {
-                                    const timeDifference = givenDate - now;
-                                    const daysRemaining = Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
-                                    return `${daysRemaining} days remaining`;
-                                }
+                            name: "spend",
+                            dataField: "spend",
+                            dataType: "number",
+                            alignment: "center",
+                            visible: false,
+                        },
+                        {
+                            name: "progress",
+                            formItem: {
+                                visible: false
                             },
-                            alignment: "center"
+                            cellTemplate(element, colData) {
+                                element.append($("<div>").dxProgressBar({
+                                    min: 0,
+                                    max: 100,
+                                    value: (colData.data.spend / colData.data.duration) * 100,
+                                }))
+                            }
                         },
                         {
                             name: "is_completed",
                             dataField: "is_completed",
-                            caption: 'Completed',
+                            caption: '',
                             dataType: 'boolean',
                             alignment: "center",
-                            width: "16vh",
-                        }]
+                            width: "5vh",
+                        },
+                        {
+                            name: "buttons",
+                            type: "buttons",
+                            buttons: [
+                                {
+                                    name: "generate",
+                                    icon: "spinnext",
+                                    onClick(e) {
+                                        if (e.row.data.spend === e.row.data.duration) {
+                                            DevExpress.ui.dialog.alert("the task is finished")
+                                        } else {
+                                            DevExpress.ui.dialog.alert("starting...")
+                                        }
+
+                                    }
+                                }, "edit", "delete",]
+                        }
+                    ]
 
                 }).appendTo(container);
             }

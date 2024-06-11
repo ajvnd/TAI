@@ -1,7 +1,7 @@
 from src import models
 
 
-class TestSubTask:
+class TestProject:
 
     def setup_method(self, method):
         self.project = models.Project()
