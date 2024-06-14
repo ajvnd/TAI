@@ -9,7 +9,7 @@ class TestSubTaskRepository:
         self.sub_task = {
             'task_id': 1,
             'title': 'create',
-            'spend': 50,
+            'progress': 50,
             'duration': 100,
             'is_completed': False
         }
@@ -40,10 +40,10 @@ class TestSubTaskRepository:
         sub_task_id = int(create_response.json())
 
         update_response = requests.put(f"{ENDPOINT}/{sub_task_id}/progression",
-                                       json={'spend': self.sub_task['spend'] + 1})
+                                       json={'progress': self.sub_task['progress'] + 1})
 
         assert update_response.status_code == 204
 
         get_response = requests.get(f"{ENDPOINT}/{sub_task_id}")
 
-        assert get_response.json()["spend"] == self.sub_task['spend'] + 1
+        assert get_response.json()["progress"] == self.sub_task['progress'] + 1

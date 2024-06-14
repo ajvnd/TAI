@@ -162,28 +162,33 @@ $(function () {
                             visible: false,
                         },
                         {
-                            name: "spend",
-                            dataField: "spend",
+                            name: "progress",
+                            dataField: "progress",
                             dataType: "number",
-
+                            alignment: "center",
                             cellTemplate(element, colData) {
                                 element.append($("<div>").dxProgressBar({
                                     min: 0,
                                     max: 100,
-                                    value: (colData.data.spend / colData.data.duration) * 100,
+                                    value: (colData.data.progress / colData.data.duration) * 100,
                                 }))
-                            }
+                            },
                         },
                         {
                             name: "status",
                             width: "7vh",
                             alignment: "center",
+                            formItem: {
+                                visible: false
+                            },
                             cellTemplate(element, colData) {
 
                                 element.append($("<div>").dxButton({
 
                                     onClick(e) {
                                         if (colData.data.id === 1) {
+
+                                            let progress = colData.data.progress;
                                             e.component.option("type", "default")
 
                                             setInterval(() => {
@@ -192,14 +197,14 @@ $(function () {
                                                         url: `${Sub_Task_URL}/${encodeURIComponent(colData.data.id)}/progression`,
                                                         method: "PUT",
                                                         contentType: "application/json",
-                                                        data: JSON.stringify({spend: colData.data.spend + 1}),
+                                                        data: JSON.stringify({progress: progress}),
                                                         success: (response) => {
-                                                            df.cellValue(colData.rowIndex, "spend", colData.data.spend + 1);
+                                                            progress = response
+                                                            df.cellValue(colData.rowIndex, "progress", progress);
                                                             df.refresh(true);
                                                         }
                                                     });
-                                                }
-                                                ,
+                                                },
                                                 6000
                                             )
                                         }

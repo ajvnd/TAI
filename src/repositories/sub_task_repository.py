@@ -25,11 +25,11 @@ class SubTaskRepository:
             if value is not None and value != "" and key != "_sa_instance_state":
                 setattr(db_sub_task, key, value)
 
-        db_sub_task.is_completed = db_sub_task.duration == db_sub_task.spend
+        db_sub_task.is_completed = db_sub_task.duration == db_sub_task.progress
 
-    def update_sub_task_progression(self, sub_task_id: int, spend: int):
+    def update_sub_task_progression(self, sub_task_id: int, progress: int):
         sub_task = self.get_sub_task(sub_task_id)
-        sub_task.spend = spend
+        sub_task.progress = progress
         self.update_sub_task(sub_task)
 
     def delete_sub_task(self, sub_task: SubTaskModel):

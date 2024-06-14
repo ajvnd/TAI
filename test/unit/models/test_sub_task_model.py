@@ -18,6 +18,6 @@ class TestSubTaskModel:
         for sub_task in sub_tasks:
             assert sub_task.task_id == 1
             assert sub_task.title is not None
-            assert sub_task.spend is not None
+            assert sub_task.progress is not None
             assert sub_task.duration is not None
             assert sub_task.is_completed is not None

@@ -11,7 +11,7 @@ class SubTaskModel(Base):
     task_id = Column(Integer, ForeignKey("task.id"), nullable=False)
     title = Column(String(255))
     is_completed = Column(Boolean, default=False)
-    spend = Column(Integer, nullable=False)
+    progress = Column(Integer, nullable=False)
     duration = Column(Integer, nullable=False)
 
     task = relationship('TaskModel', back_populates="sub_tasks")
@@ -25,7 +25,7 @@ class SubTaskModel(Base):
             sub_task.task_id = 1
             sub_task.title = fake.word()
             sub_task.duration = fake.random_int(0, 1440)
-            sub_task.spend = fake.random_int(0, sub_task.duration)
-            sub_task.is_completed = sub_task.spend == sub_task.duration
+            sub_task.progress = fake.random_int(0, sub_task.duration)
+            sub_task.is_completed = sub_task.progress == sub_task.duration
             sub_tasks.append(sub_task)
         return sub_tasks
