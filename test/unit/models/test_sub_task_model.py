@@ -2,17 +2,17 @@ import pytest
 from src import models
 
 
-class TestSubTask:
+class TestSubTaskModel:
 
     def setup_method(self, method):
-        self.sub_task = models.SubTask()
+        self.sub_task = models.SubTaskModel()
 
     @pytest.mark.parametrize("number_of_tasks", [10, 20])
-    def test_generate_sub_tasks_function_to_generate_correct_number_of_items(self, number_of_tasks):
+    def test_can_generate_correct_number_of_sub_tasks(self, number_of_tasks):
         sub_tasks = self.sub_task.generate_sub_tasks(number_of_tasks)
         assert len(sub_tasks) == number_of_tasks
 
-    def test_generate_sub_tasks_function_to_generate_correct_info_for_their_fields(self):
+    def test_can_generate_sub_tasks_and_populate_correct_info_for_their_fields(self):
         sub_tasks = self.sub_task.generate_sub_tasks()
 
         for sub_task in sub_tasks:

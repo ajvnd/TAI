@@ -1,12 +1,12 @@
 from src import models
 
 
-class TestTask:
+class TestTaskModel:
 
     def setup_method(self, method):
-        self.task = models.Task()
+        self.task = models.TaskModel()
 
-    def test_generate_tasks_function_should_generate_correct_info_for_their_fields(self):
+    def test_can_generate_tasks_and_populate_correct_info_for_their_fields(self):
         task = self.task.generate_tasks()
 
         assert task.project_id == 1

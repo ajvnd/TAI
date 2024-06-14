@@ -1,3 +1,3 @@
-from .sub_task import SubTask
-from .task import Task
-from .project import Project
+from .sub_task_repository import SubTaskRepository
+from .task_repository import TaskRepository
+from .project_repository import ProjectRepository

@@ -1,4 +1,4 @@
-from .sub_task import SubTask
-from .task import Task
-from .project import Project
+from .sub_task_model import SubTaskModel
+from .task_model import TaskModel
+from .project_model import ProjectModel
 from .base import Base, engine, SessionLocal, get_db

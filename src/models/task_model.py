@@ -4,7 +4,7 @@ from sqlalchemy.orm import relationship
 from .base import Base
 
 
-class Task(Base):
+class TaskModel(Base):
     __tablename__ = "task"
 
     id = Column(Integer, primary_key=True)
@@ -12,14 +12,14 @@ class Task(Base):
     title = Column(String(255))
     is_completed = Column(Boolean, default=False)
 
-    project = relationship("Project", back_populates="tasks")
-    sub_tasks = relationship('SubTask', back_populates='task')
+    project = relationship("ProjectModel", back_populates="tasks")
+    sub_tasks = relationship('SubTaskModel', back_populates='task')
 
     @classmethod
     def generate_tasks(cls):
         fake = Faker()
 
-        task = Task()
+        task = TaskModel()
         task.project_id = 1
         task.title = fake.word()
         task.is_completed = False

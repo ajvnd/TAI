@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from src import models, routers
+from src import routers
+from src.models import ProjectModel, TaskModel, SubTaskModel, SessionLocal, Base, engine
 
 app = FastAPI()
 app.add_middleware(
@@ -12,25 +13,25 @@ app.add_middleware(
 )
 
 # Create the database tables if they don't already exist.
-models.Base.metadata.create_all(bind=models.engine)
+Base.metadata.create_all(bind=engine)
 
 # Include endpoints in the main application
 app.include_router(routers.project.router)
 app.include_router(routers.task.router)
 app.include_router(routers.sub_task.router)
 
-db = models.SessionLocal()
+db = SessionLocal()
 try:
-    if db.query(models.Project).count() == 0:
-        db.add(models.Project.generate_projects())
+    if db.query(ProjectModel).count() == 0:
+        db.add(ProjectModel.generate_projects())
         db.commit()
 
-    if db.query(models.Task).count() == 0:
-        db.add(models.Task.generate_tasks())
+    if db.query(TaskModel).count() == 0:
+        db.add(TaskModel.generate_tasks())
         db.commit()
 
-    if db.query(models.SubTask).count() == 0:
-        db.bulk_save_objects(models.SubTask.generate_sub_tasks())
+    if db.query(SubTaskModel).count() == 0:
+        db.bulk_save_objects(SubTaskModel.generate_sub_tasks())
         db.commit()
 finally:
     db.close()

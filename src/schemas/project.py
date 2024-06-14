@@ -1,5 +1,4 @@
 from pydantic import BaseModel
-from typing import Optional
 
 
 class ProjectCreate(BaseModel):
@@ -7,4 +6,4 @@ class ProjectCreate(BaseModel):
 
 
 class ProjectUpdate(BaseModel):
-    task_id: Optional[int]
+    title: str

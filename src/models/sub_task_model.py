@@ -2,10 +2,9 @@ from faker import Faker
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from .base import Base
-import datetime
 
 
-class SubTask(Base):
+class SubTaskModel(Base):
     __tablename__ = "sub_task"
 
     id = Column(Integer, primary_key=True)
@@ -15,14 +14,14 @@ class SubTask(Base):
     spend = Column(Integer, nullable=False)
     duration = Column(Integer, nullable=False)
 
-    task = relationship('Task', back_populates="sub_tasks")
+    task = relationship('TaskModel', back_populates="sub_tasks")
 
     @classmethod
     def generate_sub_tasks(cls, count=10):
         fake = Faker()
         sub_tasks = []
         for i in range(count):
-            sub_task = SubTask()
+            sub_task = SubTaskModel()
             sub_task.task_id = 1
             sub_task.title = fake.word()
             sub_task.duration = fake.random_int(0, 1440)

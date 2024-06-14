@@ -4,7 +4,7 @@ $(function () {
     const Task_URL = "http://127.0.0.1:8000/tasks";
     const Sub_Task_URL = "http://127.0.0.1:8000/sub_tasks";
 
-    $("#tasksGrid").dxDataGrid({
+    var task_grid = $("#tasksGrid").dxDataGrid({
         dataSource: new DevExpress.data.CustomStore({
             key: "id",
             load: function () {
@@ -98,7 +98,7 @@ $(function () {
             enabled: true,
 
             template(container, options) {
-                $('<div>').dxDataGrid({
+                let db = $('<div>').dxDataGrid({
                     width: "100vw",
                     showColumnLines: true,
                     dataSource: new DevExpress.data.CustomStore({
@@ -165,14 +165,7 @@ $(function () {
                             name: "spend",
                             dataField: "spend",
                             dataType: "number",
-                            alignment: "center",
-                            visible: false,
-                        },
-                        {
-                            name: "progress",
-                            formItem: {
-                                visible: false
-                            },
+
                             cellTemplate(element, colData) {
                                 element.append($("<div>").dxProgressBar({
                                     min: 0,
@@ -182,6 +175,42 @@ $(function () {
                             }
                         },
                         {
+                            name: "status",
+                            width: "7vh",
+                            alignment: "center",
+                            cellTemplate(element, colData) {
+
+                                element.append($("<div>").dxButton({
+
+                                    onClick(e) {
+                                        if (colData.data.id === 1) {
+                                            e.component.option("type", "default")
+
+                                            setInterval(() => {
+
+                                                    return $.ajax({
+                                                        url: `${Sub_Task_URL}/${encodeURIComponent(colData.data.id)}/progression`,
+                                                        method: "PUT",
+                                                        contentType: "application/json",
+                                                        data: JSON.stringify({spend: colData.data.spend + 1}),
+                                                        success: (response) => {
+                                                            df.cellValue(colData.rowIndex, "spend", colData.data.spend + 1);
+                                                            df.refresh(true);
+                                                        }
+                                                    });
+                                                }
+                                                ,
+                                                6000
+                                            )
+                                        }
+                                    }
+
+                                }));
+
+                            }
+
+                        },
+                        {
                             name: "is_completed",
                             dataField: "is_completed",
                             caption: '',
@@ -189,28 +218,16 @@ $(function () {
                             alignment: "center",
                             width: "5vh",
                         },
-                        {
-                            name: "buttons",
-                            type: "buttons",
-                            buttons: [
-                                {
-                                    name: "generate",
-                                    icon: "spinnext",
-                                    onClick(e) {
-                                        if (e.row.data.spend === e.row.data.duration) {
-                                            DevExpress.ui.dialog.alert("the task is finished")
-                                        } else {
-                                            DevExpress.ui.dialog.alert("starting...")
-                                        }
 
-                                    }
-                                }, "edit", "delete",]
-                        }
                     ]
 
-                }).appendTo(container);
+                });
+
+
+                db.appendTo(container);
+                var df = db.dxDataGrid('instance')
             }
         }
-    });
+    }).dxDataGrid('instance');
 
 })
