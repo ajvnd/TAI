@@ -1,3 +1,3 @@
-from .project import ProjectCreate, ProjectUpdate
-from .task import TaskCreate, TaskUpdate
-from .sub_task import SubTaskCreate, SubTaskUpdate, SubTaskProgression
+from .project_schema import ProjectCreateSchema, ProjectUpdateSchema
+from .task_schema import TaskCreateSchema, TaskUpdateSchema
+from .sub_task_schema import SubTaskCreateSchema, SubTaskUpdateSchema, SubTaskProgressionSchema

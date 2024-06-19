@@ -1,7 +1,8 @@
 from fastapi import Depends, status, Response, APIRouter
 from sqlalchemy.orm import Session
-from src import schemas, models
+from src import models
 from src.repositories import ProjectRepository, TaskRepository
+from src.schemas.project_schema import ProjectCreateSchema, ProjectUpdateSchema
 
 router = APIRouter()
 
@@ -26,18 +27,18 @@ def get_tasks(task_id: int, db: Session = Depends(models.get_db)):
 
 
 @router.post("/projects", status_code=status.HTTP_201_CREATED)
-def create_project(project: schemas.ProjectCreate, db: Session = Depends(models.get_db)):
-    project = models.ProjectModel(**project.dict())
-    ProjectRepository(db).create_project(project)
+def create_project(project_create_schema: ProjectCreateSchema, db: Session = Depends(models.get_db)):
+    project_create_schema = models.ProjectModel(**project_create_schema.dict())
+    ProjectRepository(db).create_project(project_create_schema)
     db.commit()
-    return project.id
+    return project_create_schema.id
 
 
 @router.put("/projects/{project_id}", status_code=status.HTTP_204_NO_CONTENT)
-def update_project(project_id: int, project: schemas.ProjectUpdate, db: Session = Depends(models.get_db)):
-    project = models.ProjectModel(**project.dict())
-    project.id = project_id
-    ProjectRepository(db).update_project(project)
+def update_project(project_id: int, project_update_schema: ProjectUpdateSchema, db: Session = Depends(models.get_db)):
+    project_update_schema = models.ProjectModel(**project_update_schema.dict())
+    project_update_schema.id = project_id
+    ProjectRepository(db).update_project(project_update_schema)
     db.commit()
 
 
