@@ -1,7 +1,7 @@
 from fastapi import Depends, status, Response, APIRouter
 from sqlalchemy.orm import Session
 from src import schemas, models
-from src.repositories import ProjectRepository
+from src.repositories import ProjectRepository, TaskRepository
 
 router = APIRouter()
 
@@ -18,6 +18,11 @@ def get_project(project_id: int, response: Response, db: Session = Depends(model
         response.status_code = status.HTTP_404_NOT_FOUND
         return f"{project_id} not found"
     return project
+
+
+@router.get("/projects/{project_id}/tasks", status_code=status.HTTP_200_OK)
+def get_tasks(task_id: int, db: Session = Depends(models.get_db)):
+    return TaskRepository(db).get_tasks(task_id)
 
 
 @router.post("/projects", status_code=status.HTTP_201_CREATED)

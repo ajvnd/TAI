@@ -6,9 +6,9 @@ from src.repositories import TaskRepository, SubTaskRepository
 router = APIRouter()
 
 
-@router.get("/tasks", status_code=status.HTTP_200_OK)
-def get_tasks(db: Session = Depends(models.get_db)):
-    return TaskRepository(db).get_tasks()
+@router.get("/tasks/{project_id}", status_code=status.HTTP_200_OK)
+def get_tasks(project_id, db: Session = Depends(models.get_db)):
+    return TaskRepository(db).get_tasks(project_id)
 
 
 @router.get("/tasks/{task_id}", status_code=status.HTTP_200_OK)
@@ -30,6 +30,7 @@ def create_task(task: schemas.TaskCreate, db: Session = Depends(models.get_db)):
     task = models.TaskModel(**task.dict())
     TaskRepository(db).create_task(task)
     db.commit()
+    return task.id
 
 
 @router.put("/tasks/{task_id}", status_code=status.HTTP_204_NO_CONTENT)

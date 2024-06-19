@@ -4,11 +4,72 @@ $(function () {
     const Task_URL = "http://127.0.0.1:8000/tasks";
     const Sub_Task_URL = "http://127.0.0.1:8000/sub_tasks";
 
-    var task_grid = $("#tasksGrid").dxDataGrid({
+    let manage_popup = $("#manage_popup").dxPopup({}).dxPopup('instance');
+
+    let toolbar = $("#toolbar").dxToolbar({
+        height: "2vh",
+        width: "100vw",
+        items: [
+            {
+                widget: "dxSelectBox",
+                options: {
+                    onSelectionChanged(e) {
+                        localStorage.setItem("selected_project_id", e.selectedItem.id)
+                        task_grid.refresh()
+                    },
+                    width: "20vw",
+                    valueExpr: "id",
+                    displayExpr: "title",
+
+                    dataSource: new DevExpress.data.CustomStore({
+                        key: "id",
+                        load: function () {
+                            return $.getJSON(Project_URL);
+                        },
+                    }),
+                }
+            },
+            {
+                widget: "dxMenu",
+                location: 'before',
+                options: {
+                    items: [
+                        {
+                            text: "Manage",
+                            items: [
+                                {
+                                    text: 'projects',
+                                    onClick() {
+                                        manage_popup.show()
+                                    }
+                                }
+                            ]
+
+                        },
+                    ]
+                }
+            },
+            {
+                widget: "dxButton",
+                location: "after",
+                options: {
+                    icon: "sun",
+                    onClick: function (e) {
+                        if (e.component.option("icon") === "sun")
+                            e.component.option("icon", "moon")
+                        else
+                            e.component.option("icon", "sun")
+                    }
+                }
+            }
+        ]
+    }).dxToolbar('instance')
+
+    let task_grid = $("#tasksGrid").dxDataGrid({
         dataSource: new DevExpress.data.CustomStore({
             key: "id",
             load: function () {
-                return $.getJSON(Task_URL);
+                return $.getJSON(`${Task_URL}/${encodeURIComponent(localStorage.getItem("selected_project_id") ?? 1)}`);
             },
             insert: function (values) {
                 return $.ajax({
@@ -33,7 +94,7 @@ $(function () {
                 });
             },
         }),
-        height: "100vh",
+        height: "98vh",
         width: "100vw",
         showColumnLines: true,
         paging: {
@@ -79,24 +140,11 @@ $(function () {
                 alignment: "center",
                 width: "14vh",
             },
-            {
-                name: "buttons",
-                type: "buttons",
-                buttons: [
-                    {
-                        name: "generate",
-                        icon: "datapie",
-                        onClick() {
-                            alert("Generate Tasks");
-                        }
-                    }, "edit", "delete",]
-            }
         ],
 
-
+        //TODO: Hide duration, start date, end date
         masterDetail: {
             enabled: true,
-
             template(container, options) {
                 let db = $('<div>').dxDataGrid({
                     width: "100vw",
@@ -155,11 +203,24 @@ $(function () {
                             alignment: "center",
                         },
                         {
-                            name: "duration",
-                            dataField: "duration",
-                            dataType: "number",
+                            name: "start_date",
+                            dataField: "start_date",
+                            dataType: "date",
                             alignment: "center",
-                            visible: false,
+                            width: "10vh",
+                            formItem: {
+                                visible: false
+                            }
+                        },
+                        {
+                            name: "pomodoros",
+                            dataField: "pomodoros",
+                            dataType: "pomodoros",
+                            alignment: "center",
+                            width: "10vh",
+                            calculateDisplayValue: (e) => {
+                                return (e.progress / 25).toFixed(1) + " of " + e.pomodoros;
+                            }
                         },
                         {
                             name: "progress",
@@ -175,62 +236,75 @@ $(function () {
                             },
                         },
                         {
-                            name: "status",
-                            width: "7vh",
+                            name: "duration",
+                            dataField: "duration",
+                            dataType: "number",
                             alignment: "center",
+                            visible: false,
+                        },
+                        {
+                            name: "end_date",
+                            dataField: "end_date",
+                            dataType: "date",
+                            alignment: "center",
+                            width: "10vh",
                             formItem: {
                                 visible: false
-                            },
-                            cellTemplate(element, colData) {
-
-                                element.append($("<div>").dxButton({
-
-                                    onClick(e) {
-                                        if (colData.data.id === 1) {
-
-                                            let progress = colData.data.progress;
-                                            e.component.option("type", "default")
-
-                                            setInterval(() => {
-
-                                                    return $.ajax({
-                                                        url: `${Sub_Task_URL}/${encodeURIComponent(colData.data.id)}/progression`,
-                                                        method: "PUT",
-                                                        contentType: "application/json",
-                                                        data: JSON.stringify({progress: progress}),
-                                                        success: (response) => {
-                                                            progress = response
-                                                            df.cellValue(colData.rowIndex, "progress", progress);
-                                                            df.refresh(true);
-                                                        }
-                                                    });
-                                                },
-                                                6000
-                                            )
-                                        }
-                                    }
-
-                                }));
-
                             }
-
                         },
                         {
                             name: "is_completed",
                             dataField: "is_completed",
-                            caption: '',
                             dataType: 'boolean',
                             alignment: "center",
-                            width: "5vh",
+                            width: "10vh",
                         },
+                        //TODO: disable the button that has completed pomodoro
+                        {
+                            name: "buttons",
+                            dataField: "buttons",
+                            type: "buttons",
+                            buttons: [{
+                                icon: "arrowright",
+                                onClick(e, d) {
+                                    //TODO: list of interval, push, pop, pause, play, stop
+                                    let progress = e.row.data.progress;
+                                    const interval = setInterval(() => {
+
+                                            progress += 1;
+
+                                            if (progress === e.row.data.duration)
+                                                clearInterval(interval);
+
+                                            return $.ajax({
+                                                url: `${Sub_Task_URL}/${encodeURIComponent(e.row.data.id)}/progression`,
+                                                method: "PUT",
+                                                contentType: "application/json",
+                                                data: JSON.stringify({progress: progress}),
+                                                success: (response) => {
+                                                    sub_task_grid.cellValue(e.row.rowIndex, "progress", progress + 1);
+                                                    sub_task_grid.refresh(true);
+                                                    setTimeout(() => {
+                                                        $(sub_task_grid.getCellElement(e.row.rowIndex, "progress")).css('background-color', 'white');
+                                                    }, 3000)
+
+                                                }
+                                            });
+
+                                        },
+                                        1000
+                                    )
+
+                                }
+                            }, "edit", "delete"]
+                        }
 
                     ]
 
                 });
 
-
                 db.appendTo(container);
-                var df = db.dxDataGrid('instance')
+                let sub_task_grid = db.dxDataGrid('instance')
             }
         }
     }).dxDataGrid('instance');

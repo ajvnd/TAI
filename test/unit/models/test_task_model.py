@@ -10,5 +10,5 @@ class TestTaskModel:
         task = self.task.generate_tasks()
 
         assert task.project_id == 1
-        assert task.is_completed is not None
         assert task.title is not None
+        assert task.is_completed is not None

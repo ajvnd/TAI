@@ -12,6 +12,9 @@ class TaskRepository:
     def get_tasks(self):
         return self.db.query(TaskModel).all()
 
+    def get_tasks(self, project_id: int):
+        return self.db.query(TaskModel).filter(TaskModel.project_id == project_id).all()
+
     def create_task(self, task: TaskModel):
         self.db.add(task)
 

@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from src import routers
 from src.models import ProjectModel, TaskModel, SubTaskModel, SessionLocal, Base, engine
+from src.routers import project_router, task_router, sub_task_router
 
 app = FastAPI()
 app.add_middleware(
@@ -16,9 +16,9 @@ app.add_middleware(
 Base.metadata.create_all(bind=engine)
 
 # Include endpoints in the main application
-app.include_router(routers.project.router)
-app.include_router(routers.task.router)
-app.include_router(routers.sub_task.router)
+app.include_router(project_router)
+app.include_router(task_router)
+app.include_router(sub_task_router)
 
 db = SessionLocal()
 try:
