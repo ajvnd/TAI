@@ -45,8 +45,10 @@ def update_task(task_id: int, task_update_schema: TaskUpdateSchema, db: Session 
 @router.delete("/tasks/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_task(task_id: int, response: Response, db: Session = Depends(get_db)):
     task = TaskRepository(db).get_task(task_id)
+
+    # make sure the task exists before deleting it
     if not task:
         response.status_code = status.HTTP_404_NOT_FOUND
-        return f"{task_id} not found"
+
     TaskRepository(db).delete_task(task)
     db.commit()

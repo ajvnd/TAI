@@ -16,9 +16,9 @@ app.add_middleware(
 Base.metadata.create_all(bind=engine)
 
 # Include endpoints in the main application
-app.include_router(project_router)
-app.include_router(task_router)
-app.include_router(sub_task_router)
+app.include_router(project_router.router)
+app.include_router(task_router.router)
+app.include_router(sub_task_router.router)
 
 db = SessionLocal()
 try:

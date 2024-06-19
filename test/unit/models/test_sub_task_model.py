@@ -18,11 +18,13 @@ class TestSubTaskModel:
         for sub_task in sub_tasks:
             assert sub_task.task_id == 1
             assert sub_task.title is not None
-            assert sub_task.start_date is not None
             assert sub_task.pomodoros is not None
             assert sub_task.duration is not None
             assert sub_task.progress is not None
             assert sub_task.is_completed is not None
+
+            if sub_task.progress > 0 :
+                assert sub_task.start_date is not None
 
             if sub_task.is_completed:
                 assert sub_task.end_date is not None

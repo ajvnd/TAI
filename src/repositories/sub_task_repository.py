@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session, subqueryload
-from src.models import SubTaskModel
+from src.models import SubTaskModel, AppModel
 from datetime import datetime
 
 
@@ -22,7 +22,7 @@ class SubTaskRepository:
                 .all())
 
     def create_sub_task(self, sub_task: SubTaskModel):
-        sub_task.duration = sub_task.pomodoros * 25
+        sub_task.duration = sub_task.pomodoros * AppModel.default_pomodoro_time
         self.db.add(sub_task)
 
     def update_sub_task(self, sub_task: SubTaskModel):
@@ -31,9 +31,19 @@ class SubTaskRepository:
             if value is not None and value != "" and key != "_sa_instance_state":
                 setattr(db_sub_task, key, value)
 
-        db_sub_task.duration = sub_task.pomodoros * 25
+        # if it was the first time that the user hit progress button, then set start date of the subtask
+        if sub_task.progress == 1:
+            sub_task.start_date = datetime.now()
+
+        # always keep duration synch with pomodoros
+        db_sub_task.duration = sub_task.pomodoros * AppModel.default_pomodoro_time
+
+        # always keep completion of subtask synch with other timing parameters
         db_sub_task.is_completed = db_sub_task.duration == db_sub_task.progress
-        db_sub_task.end_date = datetime.now() if db_sub_task.is_completed else None
+
+        # check if the task was not set earlier, then synch it with completion of subtask
+        if db_sub_task.end_date is None:
+            db_sub_task.end_date = datetime.now() if db_sub_task.is_completed else None
 
     def update_sub_task_progression(self, sub_task_id: int, progress: int):
         sub_task = self.get_sub_task(sub_task_id)

@@ -155,8 +155,9 @@ $(function () {
                             return $.getJSON(`${Task_URL}/${encodeURIComponent(options.data.id)}/sub_tasks`);
                         },
                         insert: function (values) {
+                            values.task_id = options.data.id;
                             return $.ajax({
-                                url: Task_URL,
+                                url: Sub_Task_URL,
                                 method: "POST",
                                 contentType: "application/json",
                                 data: JSON.stringify(values)
@@ -191,10 +192,10 @@ $(function () {
                             name: "id",
                             dataField: "id",
                             visible: false,
+                            alignment: "center",
                             formItem: {
                                 visible: false
                             },
-                            alignment: "center",
                         },
                         {
                             name: "title",
@@ -227,6 +228,9 @@ $(function () {
                             dataField: "progress",
                             dataType: "number",
                             alignment: "center",
+                            formItem: {
+                                visible: false
+                            },
                             cellTemplate(element, colData) {
                                 element.append($("<div>").dxProgressBar({
                                     min: 0,
@@ -241,6 +245,9 @@ $(function () {
                             dataType: "number",
                             alignment: "center",
                             visible: false,
+                            formItem: {
+                                visible: false
+                            }
                         },
                         {
                             name: "end_date",

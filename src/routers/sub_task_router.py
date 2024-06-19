@@ -40,7 +40,6 @@ def update_sub_task(sub_task_id: int, sub_task_update_schema: SubTaskUpdateSchem
 @router.put("/sub_tasks/{sub_task_id}/progression", status_code=status.HTTP_204_NO_CONTENT)
 def update_sub_task_progression(sub_task_id: int, sub_task_progression_schema: SubTaskProgressionSchema,
                                 db: Session = Depends(get_db)):
-    # TODO: if the progress is zero, set start_date as of now
     SubTaskRepository(db).update_sub_task_progression(sub_task_id, sub_task_progression_schema.progress)
     db.commit()
 
@@ -48,8 +47,10 @@ def update_sub_task_progression(sub_task_id: int, sub_task_progression_schema: S
 @router.delete("/sub_tasks/{sub_task_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_sub_task(sub_task_id: int, response: Response, db: Session = Depends(get_db)):
     sub_task = SubTaskRepository(db).get_sub_task(sub_task_id)
+    # make sure the subtask exists before deleting it
     if not sub_task:
         response.status_code = status.HTTP_404_NOT_FOUND
-        return f"{sub_task_id} not found"
+        return
+
     SubTaskRepository(db).delete_sub_task(sub_task)
     db.commit()

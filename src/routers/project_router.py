@@ -45,8 +45,10 @@ def update_project(project_id: int, project_update_schema: ProjectUpdateSchema, 
 @router.delete("/projects/{project_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_project(project_id: int, response: Response, db: Session = Depends(models.get_db)):
     project = ProjectRepository(db).get_project(project_id)
+    # make sure the project exists before deleting it
     if not project:
         response.status_code = status.HTTP_404_NOT_FOUND
-        return f"{project_id} not found"
+        return
+
     ProjectRepository(db).delete_project(project)
     db.commit()
