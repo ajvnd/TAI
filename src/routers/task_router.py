@@ -17,7 +17,6 @@ def get_task(task_id: int, response: Response, db: Session = Depends(get_db)):
     task = TaskRepository(db).get_task(task_id)
     if not task:
         response.status_code = status.HTTP_404_NOT_FOUND
-        return f"{task_id} not found"
     return task
 
 

@@ -4,6 +4,13 @@ $(function () {
     const Task_URL = "http://127.0.0.1:8000/tasks";
     const Sub_Task_URL = "http://127.0.0.1:8000/sub_tasks";
 
+    const Default_Project_Id = 1;
+
+    function getProjectId() {
+        return localStorage.getItem("selected_project_id") ?? Default_Project_Id;
+    }
+
+
     let manage_popup = $("#manage_popup").dxPopup({}).dxPopup('instance');
 
     let toolbar = $("#toolbar").dxToolbar({
@@ -20,7 +27,6 @@ $(function () {
                     width: "20vw",
                     valueExpr: "id",
                     displayExpr: "title",
-
                     dataSource: new DevExpress.data.CustomStore({
                         key: "id",
                         load: function () {
@@ -49,19 +55,6 @@ $(function () {
                     ]
                 }
             },
-            {
-                widget: "dxButton",
-                location: "after",
-                options: {
-                    icon: "sun",
-                    onClick: function (e) {
-                        if (e.component.option("icon") === "sun")
-                            e.component.option("icon", "moon")
-                        else
-                            e.component.option("icon", "sun")
-                    }
-                }
-            }
         ]
     }).dxToolbar('instance')
 
@@ -69,9 +62,10 @@ $(function () {
         dataSource: new DevExpress.data.CustomStore({
             key: "id",
             load: function () {
-                return $.getJSON(`${Task_URL}/${encodeURIComponent(localStorage.getItem("selected_project_id") ?? 1)}`);
+                return $.getJSON(`${Task_URL}/${encodeURIComponent(getProjectId())}`);
             },
             insert: function (values) {
+                values.project_id = getProjectId()
                 return $.ajax({
                     url: Task_URL,
                     method: "POST",
@@ -80,6 +74,7 @@ $(function () {
                 });
             },
             update: (key, values) => {
+                values.project_id = getProjectId()
                 return $.ajax({
                     url: `${Task_URL}/${encodeURIComponent(key)}`,
                     method: "PUT",
@@ -97,6 +92,13 @@ $(function () {
         height: "98vh",
         width: "100vw",
         showColumnLines: true,
+
+        editing: {
+            mode: 'row',
+            allowAdding: true,
+            allowUpdating: true,
+            allowDeleting: true,
+        },
         paging: {
             enabled: true,
             pageSize: 10,
@@ -109,12 +111,8 @@ $(function () {
             showNavigationButtons: true,
             showInfo: true,
         },
-
-        editing: {
-            mode: 'row',
-            allowAdding: true,
-            allowUpdating: true,
-            allowDeleting: true,
+        sorting: {
+            mode: "none"
         },
         columns: [
             {
@@ -141,8 +139,6 @@ $(function () {
                 width: "14vh",
             },
         ],
-
-        //TODO: Hide duration, start date, end date
         masterDetail: {
             enabled: true,
             template(container, options) {
@@ -186,6 +182,21 @@ $(function () {
                         form: {
                             labelLocation: "left"
                         }
+                    },
+                    paging: {
+                        enabled: true,
+                        pageSize: 10,
+                    },
+                    pager: {
+                        visible: true,
+                        displayMode: "full",
+                        allowedPageSizes: [10, 20, 50, 100],
+                        showPageSizeSelector: true,
+                        showNavigationButtons: true,
+                        showInfo: true,
+                    },
+                    sorting: {
+                        mode: "none"
                     },
                     columns: [
                         {
@@ -266,22 +277,24 @@ $(function () {
                             alignment: "center",
                             width: "10vh",
                         },
-                        //TODO: disable the button that has completed pomodoro
                         {
                             name: "buttons",
                             dataField: "buttons",
                             type: "buttons",
                             buttons: [{
                                 icon: "arrowright",
+                                disabled: (e) => {
+                                    return e.row.data.is_completed;
+                                },
                                 onClick(e, d) {
                                     //TODO: list of interval, push, pop, pause, play, stop
                                     let progress = e.row.data.progress;
                                     const interval = setInterval(() => {
 
                                             progress += 1;
-
-                                            if (progress === e.row.data.duration)
+                                            if (progress === e.row.data.duration) {
                                                 clearInterval(interval);
+                                            }
 
                                             return $.ajax({
                                                 url: `${Sub_Task_URL}/${encodeURIComponent(e.row.data.id)}/progression`,
