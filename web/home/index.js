@@ -10,10 +10,7 @@ $(function () {
         return localStorage.getItem("selected_project_id") ?? Default_Project_Id;
     }
 
-
-    let manage_popup = $("#manage_popup").dxPopup({}).dxPopup('instance');
-
-    let toolbar = $("#toolbar").dxToolbar({
+    $("#toolbar").dxToolbar({
         height: "2vh",
         width: "100vw",
         items: [
@@ -24,7 +21,7 @@ $(function () {
                         localStorage.setItem("selected_project_id", e.selectedItem.id)
                         task_grid.refresh()
                     },
-                    width: "20vw",
+                    width: "30vw",
                     valueExpr: "id",
                     displayExpr: "title",
                     dataSource: new DevExpress.data.CustomStore({
@@ -35,28 +32,8 @@ $(function () {
                     }),
                 }
             },
-            {
-                widget: "dxMenu",
-                location: 'before',
-                options: {
-                    items: [
-                        {
-                            text: "Manage",
-                            items: [
-                                {
-                                    text: 'projects',
-                                    onClick() {
-                                        manage_popup.show()
-                                    }
-                                }
-                            ]
-
-                        },
-                    ]
-                }
-            },
         ]
-    }).dxToolbar('instance')
+    });
 
     let task_grid = $("#tasksGrid").dxDataGrid({
         dataSource: new DevExpress.data.CustomStore({
@@ -145,6 +122,7 @@ $(function () {
                 let db = $('<div>').dxDataGrid({
                     width: "100vw",
                     showColumnLines: true,
+                    columnHidingEnabled: true,
                     dataSource: new DevExpress.data.CustomStore({
                         key: "id",
                         load: function () {
@@ -219,7 +197,7 @@ $(function () {
                             dataField: "start_date",
                             dataType: "date",
                             alignment: "center",
-                            width: "10vh",
+                            hidingPriority: 0,
                             formItem: {
                                 visible: false
                             }
@@ -229,7 +207,7 @@ $(function () {
                             dataField: "pomodoros",
                             dataType: "pomodoros",
                             alignment: "center",
-                            width: "10vh",
+                            hidingPriority: 2,
                             calculateDisplayValue: (e) => {
                                 return (e.progress / 25).toFixed(1) + " of " + e.pomodoros;
                             }
@@ -239,6 +217,7 @@ $(function () {
                             dataField: "progress",
                             dataType: "number",
                             alignment: "center",
+                            hidingPriority: 3,
                             formItem: {
                                 visible: false
                             },
@@ -265,7 +244,7 @@ $(function () {
                             dataField: "end_date",
                             dataType: "date",
                             alignment: "center",
-                            width: "10vh",
+                            hidingPriority: 1,
                             formItem: {
                                 visible: false
                             }
@@ -275,7 +254,6 @@ $(function () {
                             dataField: "is_completed",
                             dataType: 'boolean',
                             alignment: "center",
-                            width: "10vh",
                         },
                         {
                             name: "buttons",
@@ -287,22 +265,22 @@ $(function () {
                                     return e.row.data.is_completed;
                                 },
                                 onClick(e, d) {
-                                    //TODO: list of interval, push, pop, pause, play, stop
-                                    let progress = e.row.data.progress;
-                                    const interval = setInterval(() => {
+                                    //TODO: Increasing
+                                    let interval = get_interval(e.row.data.id)
 
-                                            progress += 1;
-                                            if (progress === e.row.data.duration) {
-                                                clearInterval(interval);
-                                            }
+                                    if (interval === null) {
 
-                                            return $.ajax({
+                                        interval = {};
+                                        interval.is_running = true;
+                                        interval.progress = e.row.data.progress + 1
+                                        interval.operation = () => {
+                                            $.ajax({
                                                 url: `${Sub_Task_URL}/${encodeURIComponent(e.row.data.id)}/progression`,
                                                 method: "PUT",
                                                 contentType: "application/json",
-                                                data: JSON.stringify({progress: progress}),
+                                                data: JSON.stringify({progress: interval.progress}),
                                                 success: (response) => {
-                                                    sub_task_grid.cellValue(e.row.rowIndex, "progress", progress + 1);
+                                                    sub_task_grid.cellValue(e.row.rowIndex, "progress", interval.progress);
                                                     sub_task_grid.refresh(true);
                                                     setTimeout(() => {
                                                         $(sub_task_grid.getCellElement(e.row.rowIndex, "progress")).css('background-color', 'white');
@@ -310,11 +288,16 @@ $(function () {
 
                                                 }
                                             });
-
-                                        },
-                                        1000
-                                    )
-
+                                        }
+                                        set_interval(e.row.data.id, interval)
+                                        continue_interval(e.row.data.id)
+                                    } else {
+                                        if (interval.is_running) {
+                                            halt_interval(e.row.data.id)
+                                        } else {
+                                            continue_interval(e.row.data.id)
+                                        }
+                                    }
                                 }
                             }, "edit", "delete"]
                         }
@@ -330,3 +313,29 @@ $(function () {
     }).dxDataGrid('instance');
 
 })
+
+
+let intervals = [];
+
+function get_interval(task_id) {
+    if (intervals[task_id] != null)
+        return intervals[task_id]
+    return null
+}
+
+function set_interval(task_id, interval) {
+    intervals[task_id] = interval;
+}
+
+function halt_interval(task_id) {
+    intervals[task_id].is_running = false;
+    clearInterval(intervals[task_id].interval);
+}
+
+function continue_interval(task_id) {
+    intervals[task_id].is_running = true;
+    intervals[task_id].interval = setInterval(() => {
+        intervals[task_id].operation()
+    }, 6000);
+}
+

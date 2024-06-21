@@ -2,10 +2,12 @@ import pytest
 import requests
 from fastapi import status
 
+from tests.integration.routers import TestBaseRouter
+
 ENDPOINT = 'http://127.0.0.1:8000/projects'
 
 
-class TestProjectRouter:
+class TestProjectRouter(TestBaseRouter):
 
     def setup_method(self, method):
         self.project = {'title': 'create'}

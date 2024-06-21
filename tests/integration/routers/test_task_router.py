@@ -1,10 +1,13 @@
 import requests, pytest
 from fastapi import status
 
+from tests.integration.routers import TestBaseRouter
+
 ENDPOINT = 'http://127.0.0.1:8000/tasks'
 
 
-class TestTaskRouter:
+class TestTaskRouter(TestBaseRouter):
+    
     def setup_method(self, method):
         self.task = {
             'project_id': 1,
