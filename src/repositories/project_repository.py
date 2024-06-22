@@ -9,7 +9,7 @@ class ProjectRepository:
     def get_project(self, project_id: int):
         return self.db.query(ProjectModel).filter(ProjectModel.id == project_id).first()
 
-    def get_projects(self) -> [ProjectModel]:
+    def get_projects(self):
         return self.db.query(ProjectModel).all()
 
     def create_project(self, project: ProjectModel):
