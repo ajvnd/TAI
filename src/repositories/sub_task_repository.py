@@ -22,7 +22,6 @@ class SubTaskRepository:
                 .all())
 
     def create_sub_task(self, sub_task: SubTaskModel):
-        sub_task.duration = sub_task.pomodoros * AppModel.default_pomodoro_time
         self.db.add(sub_task)
 
     def update_sub_task(self, sub_task: SubTaskModel):
@@ -35,11 +34,8 @@ class SubTaskRepository:
         if sub_task.progress == 1:
             sub_task.start_date = datetime.now()
 
-        # always keep duration synch with pomodoros
-        db_sub_task.duration = sub_task.pomodoros * AppModel.default_pomodoro_time
-
         # always keep completion of subtask synch with other timing parameters
-        db_sub_task.is_completed = db_sub_task.duration == db_sub_task.progress
+        db_sub_task.is_completed = db_sub_task.progress == AppModel.default_pomodoro_time
 
         # check if the task was not set earlier, then synch it with completion of subtask
         if db_sub_task.end_date is None:

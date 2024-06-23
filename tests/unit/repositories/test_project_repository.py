@@ -50,7 +50,15 @@ class TestProjectRepository:
         # Assert
         mock_db_session.add.assert_called_once_with(mock_project)
 
-    def test_can_update_project(self, mock_db_session):
+    def test_can_update_a_project(self, mock_db_session):
+        project_repository = ProjectRepository(mock_db_session)
+        mock_project = ProjectModel(id=1, title="Test Project")
+
+        project_repository.update_project(mock_project)
+
+        # TODO: Inner funnction should be patch
+
+    def test_can_delete_a_project(self, mock_db_session):
         project_repository = ProjectRepository(mock_db_session)
         mock_project = ProjectModel(id=1, title="Test Project")
 

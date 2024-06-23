@@ -108,6 +108,16 @@ $(function () {
                 alignment: "center",
             },
             {
+                name: "pomodoros",
+                dataField: "pomodoros",
+                dataType: "pomodoros",
+                alignment: "center",
+                hidingPriority: 2,
+                calculateDisplayValue: (e) => {
+                    return (e.progress / 25).toFixed(1) + " of " + e.pomodoros;
+                }
+            },
+            {
                 name: "is_completed",
                 dataField: "is_completed",
                 caption: "Completed",
@@ -119,7 +129,7 @@ $(function () {
         masterDetail: {
             enabled: true,
             template(container, options) {
-                let db = $('<div>').dxDataGrid({
+                $('<div>').dxDataGrid({
                     width: "100vw",
                     showColumnLines: true,
                     columnHidingEnabled: true,
@@ -202,43 +212,7 @@ $(function () {
                                 visible: false
                             }
                         },
-                        {
-                            name: "pomodoros",
-                            dataField: "pomodoros",
-                            dataType: "pomodoros",
-                            alignment: "center",
-                            hidingPriority: 2,
-                            calculateDisplayValue: (e) => {
-                                return (e.progress / 25).toFixed(1) + " of " + e.pomodoros;
-                            }
-                        },
-                        {
-                            name: "progress",
-                            dataField: "progress",
-                            dataType: "number",
-                            alignment: "center",
-                            hidingPriority: 3,
-                            formItem: {
-                                visible: false
-                            },
-                            cellTemplate(element, colData) {
-                                element.append($("<div>").dxProgressBar({
-                                    min: 0,
-                                    max: 100,
-                                    value: (colData.data.progress / colData.data.duration) * 100,
-                                }))
-                            },
-                        },
-                        {
-                            name: "duration",
-                            dataField: "duration",
-                            dataType: "number",
-                            alignment: "center",
-                            visible: false,
-                            formItem: {
-                                visible: false
-                            }
-                        },
+
                         {
                             name: "end_date",
                             dataField: "end_date",
@@ -250,6 +224,18 @@ $(function () {
                             }
                         },
                         {
+                            name: "progress",
+                            dataField: "progress",
+                            dataType: "number",
+                            alignment: "center",
+                            formItem: {
+                                visible: false
+                            },
+                            calculateDisplayValue: (e) => {
+                                return `${parseInt(e.progress / Default_Pomodoro_time * 100)}%`
+                            }
+                        },
+                        {
                             name: "is_completed",
                             dataField: "is_completed",
                             dataType: 'boolean',
@@ -257,7 +243,6 @@ $(function () {
                         },
                         {
                             name: "buttons",
-                            dataField: "buttons",
                             type: "buttons",
                             buttons: [{
                                 icon: "arrowright",
@@ -265,77 +250,30 @@ $(function () {
                                     return e.row.data.is_completed;
                                 },
                                 onClick(e, d) {
-                                    //TODO: Increasing
-                                    let interval = get_interval(e.row.data.id)
 
-                                    if (interval === null) {
-
-                                        interval = {};
-                                        interval.is_running = true;
-                                        interval.progress = e.row.data.progress + 1
-                                        interval.operation = () => {
-                                            $.ajax({
-                                                url: `${Sub_Task_URL}/${encodeURIComponent(e.row.data.id)}/progression`,
-                                                method: "PUT",
-                                                contentType: "application/json",
-                                                data: JSON.stringify({progress: interval.progress}),
-                                                success: (response) => {
-                                                    sub_task_grid.cellValue(e.row.rowIndex, "progress", interval.progress);
-                                                    sub_task_grid.refresh(true);
-                                                    setTimeout(() => {
-                                                        $(sub_task_grid.getCellElement(e.row.rowIndex, "progress")).css('background-color', 'white');
-                                                    }, 3000)
-
-                                                }
-                                            });
-                                        }
-                                        set_interval(e.row.data.id, interval)
-                                        continue_interval(e.row.data.id)
-                                    } else {
-                                        if (interval.is_running) {
-                                            halt_interval(e.row.data.id)
-                                        } else {
-                                            continue_interval(e.row.data.id)
-                                        }
-                                    }
+                                    let timer = get_timer(() => {
+                                        $.ajax({
+                                            url: `${Sub_Task_URL}/${encodeURIComponent(e.row.data.id)}/progression`,
+                                            method: "PUT",
+                                            contentType: "application/json",
+                                            data: JSON.stringify({progress: Default_Pomodoro_time}),
+                                            success: (response) => {
+                                                e.component.refresh()
+                                            }
+                                        });
+                                        timer.hide()
+                                    })
+                                    timer.show()
                                 }
                             }, "edit", "delete"]
                         }
 
                     ]
 
-                });
-
-                db.appendTo(container);
-                let sub_task_grid = db.dxDataGrid('instance')
+                }).appendTo(container)
             }
         }
     }).dxDataGrid('instance');
 
 })
-
-
-let intervals = [];
-
-function get_interval(task_id) {
-    if (intervals[task_id] != null)
-        return intervals[task_id]
-    return null
-}
-
-function set_interval(task_id, interval) {
-    intervals[task_id] = interval;
-}
-
-function halt_interval(task_id) {
-    intervals[task_id].is_running = false;
-    clearInterval(intervals[task_id].interval);
-}
-
-function continue_interval(task_id) {
-    intervals[task_id].is_running = true;
-    intervals[task_id].interval = setInterval(() => {
-        intervals[task_id].operation()
-    }, 6000);
-}
 

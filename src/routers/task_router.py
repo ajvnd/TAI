@@ -7,17 +7,17 @@ from src.schemas.task_schema import TaskCreateSchema, TaskUpdateSchema
 router = APIRouter()
 
 
-@router.get("/tasks/{project_id}", status_code=status.HTTP_200_OK)
-def get_tasks(project_id, db: Session = Depends(get_db)):
-    return TaskRepository(db).get_tasks(project_id)
-
-
 @router.get("/tasks/{task_id}", status_code=status.HTTP_200_OK)
 def get_task(task_id: int, response: Response, db: Session = Depends(get_db)):
     task = TaskRepository(db).get_task(task_id)
     if not task:
         response.status_code = status.HTTP_404_NOT_FOUND
     return task
+
+
+@router.get("/tasks", status_code=status.HTTP_200_OK)
+def get_tasks(project_id, db: Session = Depends(get_db)):
+    return TaskRepository(db).get_tasks()
 
 
 @router.get("/tasks/{task_id}/sub_tasks", status_code=status.HTTP_200_OK)
