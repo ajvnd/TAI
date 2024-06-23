@@ -13,7 +13,6 @@ class TestSubTaskRouter(TestBaseRouter):
             'task_id': 1,
             'title': 'create',
             'progress': 50,
-            'pomodoros': 4,
             'is_completed': False
         }
 
