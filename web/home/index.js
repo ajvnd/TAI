@@ -1,48 +1,165 @@
+function get_profile_pop_up() {
+    return $("#profile_pop_up").dxPopup({}).dxPopup('instance');
+}
+
+function get_settings_pop_up() {
+    return $("#settings_pop_up").dxPopup({}).dxPopup('instance');
+}
+
 $(function () {
 
     const Project_URL = "http://127.0.0.1:8000/projects";
     const Task_URL = "http://127.0.0.1:8000/tasks";
-    const Sub_Task_URL = "http://127.0.0.1:8000/sub_tasks";
-
-    const Default_Project_Id = 1;
-
-    function getProjectId() {
-        return localStorage.getItem("selected_project_id") ?? Default_Project_Id;
-    }
 
     $("#toolbar").dxToolbar({
-        height: "2vh",
-        width: "100vw",
+        elementAttr: {
+            class: "dx-theme-border-color-as-background-color",
+        },
         items: [
             {
-                widget: "dxSelectBox",
+                widget: 'dxButton',
+                location: "before",
                 options: {
-                    onSelectionChanged(e) {
-                        localStorage.setItem("selected_project_id", e.selectedItem.id)
-                        task_grid.refresh()
-                    },
-                    width: "30vw",
-                    valueExpr: "id",
-                    displayExpr: "title",
-                    dataSource: new DevExpress.data.CustomStore({
-                        key: "id",
-                        load: function () {
-                            return $.getJSON(Project_URL);
-                        },
-                    }),
+                    icon: 'menu',
+                    onClick() {
+                        drawer.toggle()
+                    }
                 }
             },
+            {
+                widget: 'dxSelectBox',
+                locateInMenu: "auto",
+                options: {
+                    icon: 'search',
+                    width: "100%",
+                }
+            },
+            {
+                widget: 'dxDropDownButton',
+                location: "after",
+                locateInMenu: "auto",
+                options: {
+                    text: "ahmadjavadi17@gmail.com",
+                    icon: 'user',
+                    splitButton: true,
+                    items: [
+                        {
+                            icon: "accountbox",
+                            text: "Profile",
+                            onClick() {
+                                let profile_pop_up = get_profile_pop_up();
+                                profile_pop_up.show()
+                            }
+                        },
+                        {
+                            icon: "preferences",
+                            text: "Settings",
+                            onClick() {
+                                let settings_pop_up = get_settings_pop_up();
+                                settings_pop_up.show()
+                            }
+                        },
+                        {
+                            icon: "arrowleft",
+                            text: "Sign Out"
+                        }]
+                }
+            }
         ]
     });
 
-    let task_grid = $("#tasksGrid").dxDataGrid({
+    $("#summary").dxForm({
+        colCount: 2,
+        readOnly: true,
+        items: [{
+            widget: 'dxTextBox',
+            dataField: "tasks_to_complete",
+            label: {
+                text: "Tasks to complete",
+                alignment: "center"
+            },
+            editorOptions: {
+                stylingMode: "underlined",
+            }
+        }, {
+            widget: 'dxTextBox',
+            dataField: "completed_tasks",
+            label: {
+                text: "Completed tasks",
+                alignment: "center"
+            },
+            editorOptions: {
+                stylingMode: "underlined",
+            }
+        }]
+    })
+
+    const drawer = $("#drawer").dxDrawer({
+
+        template() {
+
+            return $("<div/>").dxList({
+                elementAttr: {
+                    class: "dx-theme-border-color-as-background-color",
+                    id: "drawer-content"
+                },
+                width: "200px",
+                grouped: true,
+                collapsibleGroups: true,
+                items: [
+                    {
+                        key: "Due Date",
+                        items: [
+                            {
+                                text: "Today",
+                                badge: "27",
+                            },
+                            {
+                                text: "Tomorrow",
+                                badge: "13"
+                            },
+                            {
+                                text: "This Week",
+                                badge: "43"
+                            },
+                            {
+                                text: "Some Days", badge: "61",
+                            }
+                        ]
+                    },
+                    {
+                        key: "Projects",
+                        items: [
+                            {
+                                text: "Project 1",
+                                badge: "50",
+                            }, {
+                                text: "Project 2",
+                                badge: "43",
+                            },
+                            {
+                                text: "Project 3",
+                                badge: "21",
+                            },
+                            {
+                                icon: "more",
+                                text: "More"
+                            }
+                        ]
+                    }]
+            })
+        }
+
+    }).dxDrawer('instance');
+
+
+    $("#tasksGrid").dxDataGrid({
         dataSource: new DevExpress.data.CustomStore({
             key: "id",
             load: function () {
-                return $.getJSON(`${Task_URL}/${encodeURIComponent(getProjectId())}`);
+                return $.getJSON(Task_URL);
             },
             insert: function (values) {
-                values.project_id = getProjectId()
                 return $.ajax({
                     url: Task_URL,
                     method: "POST",
@@ -51,7 +168,6 @@ $(function () {
                 });
             },
             update: (key, values) => {
-                values.project_id = getProjectId()
                 return $.ajax({
                     url: `${Task_URL}/${encodeURIComponent(key)}`,
                     method: "PUT",
@@ -66,10 +182,6 @@ $(function () {
                 });
             },
         }),
-        height: "98vh",
-        width: "100vw",
-        showColumnLines: true,
-
         editing: {
             mode: 'row',
             allowAdding: true,
@@ -82,10 +194,10 @@ $(function () {
         },
         pager: {
             visible: true,
-            displayMode: "full",
             allowedPageSizes: [10, 20, 50, 100],
             showPageSizeSelector: true,
             showNavigationButtons: true,
+            displayMode: "adaptive",
             showInfo: true,
         },
         sorting: {
@@ -95,11 +207,11 @@ $(function () {
             {
                 name: "id",
                 dataField: "id",
-                visible: false,
                 formItem: {
                     visible: false
                 },
                 alignment: "center",
+                width: "10%",
             },
             {
                 name: "title",
@@ -107,173 +219,17 @@ $(function () {
                 dataType: "string",
                 alignment: "center",
             },
+
             {
-                name: "pomodoros",
-                dataField: "pomodoros",
-                dataType: "pomodoros",
-                alignment: "center",
-                hidingPriority: 2,
-                calculateDisplayValue: (e) => {
-                    return (e.progress / 25).toFixed(1) + " of " + e.pomodoros;
-                }
-            },
-            {
-                name: "is_completed",
-                dataField: "is_completed",
-                caption: "Completed",
+                name: "done",
+                dataField: "done",
                 dataType: "boolean",
                 alignment: "center",
-                width: "14vh",
+                width: "10%",
             },
         ],
-        masterDetail: {
-            enabled: true,
-            template(container, options) {
-                $('<div>').dxDataGrid({
-                    width: "100vw",
-                    showColumnLines: true,
-                    columnHidingEnabled: true,
-                    dataSource: new DevExpress.data.CustomStore({
-                        key: "id",
-                        load: function () {
-                            return $.getJSON(`${Task_URL}/${encodeURIComponent(options.data.id)}/sub_tasks`);
-                        },
-                        insert: function (values) {
-                            values.task_id = options.data.id;
-                            return $.ajax({
-                                url: Sub_Task_URL,
-                                method: "POST",
-                                contentType: "application/json",
-                                data: JSON.stringify(values)
-                            });
-                        },
-                        update: (key, values) => {
-                            return $.ajax({
-                                url: `${Sub_Task_URL}/${encodeURIComponent(key)}`,
-                                method: "PUT",
-                                contentType: "application/json",
-                                data: JSON.stringify(values)
-                            });
-                        },
-                        remove: (key) => {
-                            return $.ajax({
-                                url: `${Sub_Task_URL}/${encodeURIComponent(key)}`,
-                                method: "DELETE",
-                            });
-                        },
-                    }),
-                    editing: {
-                        mode: 'form',
-                        allowAdding: true,
-                        allowUpdating: true,
-                        allowDeleting: true,
-                        form: {
-                            labelLocation: "left"
-                        }
-                    },
-                    paging: {
-                        enabled: true,
-                        pageSize: 10,
-                    },
-                    pager: {
-                        visible: true,
-                        displayMode: "full",
-                        allowedPageSizes: [10, 20, 50, 100],
-                        showPageSizeSelector: true,
-                        showNavigationButtons: true,
-                        showInfo: true,
-                    },
-                    sorting: {
-                        mode: "none"
-                    },
-                    columns: [
-                        {
-                            name: "id",
-                            dataField: "id",
-                            visible: false,
-                            alignment: "center",
-                            formItem: {
-                                visible: false
-                            },
-                        },
-                        {
-                            name: "title",
-                            dataField: "title",
-                            dataType: "string",
-                            alignment: "center",
-                        },
-                        {
-                            name: "start_date",
-                            dataField: "start_date",
-                            dataType: "date",
-                            alignment: "center",
-                            hidingPriority: 0,
-                            formItem: {
-                                visible: false
-                            }
-                        },
-
-                        {
-                            name: "end_date",
-                            dataField: "end_date",
-                            dataType: "date",
-                            alignment: "center",
-                            hidingPriority: 1,
-                            formItem: {
-                                visible: false
-                            }
-                        },
-                        {
-                            name: "progress",
-                            dataField: "progress",
-                            dataType: "number",
-                            alignment: "center",
-                            formItem: {
-                                visible: false
-                            },
-                            calculateDisplayValue: (e) => {
-                                return `${parseInt(e.progress / Default_Pomodoro_time * 100)}%`
-                            }
-                        },
-                        {
-                            name: "is_completed",
-                            dataField: "is_completed",
-                            dataType: 'boolean',
-                            alignment: "center",
-                        },
-                        {
-                            name: "buttons",
-                            type: "buttons",
-                            buttons: [{
-                                icon: "arrowright",
-                                disabled: (e) => {
-                                    return e.row.data.is_completed;
-                                },
-                                onClick(e, d) {
-
-                                    let timer = get_timer(() => {
-                                        $.ajax({
-                                            url: `${Sub_Task_URL}/${encodeURIComponent(e.row.data.id)}/progression`,
-                                            method: "PUT",
-                                            contentType: "application/json",
-                                            data: JSON.stringify({progress: Default_Pomodoro_time}),
-                                            success: (response) => {
-                                                e.component.refresh()
-                                            }
-                                        });
-                                        timer.hide()
-                                    })
-                                    timer.show()
-                                }
-                            }, "edit", "delete"]
-                        }
-
-                    ]
-
-                }).appendTo(container)
-            }
-        }
     }).dxDataGrid('instance');
+
 
 })
 

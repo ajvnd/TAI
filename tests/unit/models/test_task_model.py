@@ -11,4 +11,4 @@ class TestTaskModel:
 
         assert task.project_id == 1
         assert task.title is not None
-        assert task.is_completed is not None
+        assert task.done is not None

@@ -1,5 +1,5 @@
 from faker import Faker
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from .base import Base
 
@@ -10,7 +10,8 @@ class TaskModel(Base):
     id = Column(Integer, primary_key=True)
     project_id = Column(Integer, ForeignKey("project.id"), nullable=False)
     title = Column(String(255))
-    is_completed = Column(Boolean, default=False)
+    due_Date = Column(DateTime, nullable=True)
+    done = Column(Boolean, default=False)
 
     project = relationship("ProjectModel", back_populates="tasks")
     sub_tasks = relationship('SubTaskModel', back_populates='task')
@@ -22,6 +23,6 @@ class TaskModel(Base):
         task = TaskModel()
         task.project_id = 1
         task.title = fake.word()
-        task.is_completed = False
+        task.done = False
 
         return task

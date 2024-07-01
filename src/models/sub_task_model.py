@@ -12,9 +12,7 @@ class SubTaskModel(Base):
     id = Column(Integer, primary_key=True)
     task_id = Column(Integer, ForeignKey("task.id"), nullable=False)
     title = Column(String(255))
-    start_date = Column(DateTime, nullable=True)
     progress = Column(Integer, nullable=True)
-    end_date = Column(DateTime, nullable=True)
     is_completed = Column(Boolean, default=False)
 
     task = relationship('TaskModel', back_populates="sub_tasks")
@@ -29,9 +27,5 @@ class SubTaskModel(Base):
             sub_task.title = fake.word()
             sub_task.is_completed = sub_task.progress == AppModel.default_pomodoro_time
             sub_task.progress = fake.random_int(1, 24)
-            # start date has value if progress greater 0, meaning the user hit the progression button
-            sub_task.start_date = datetime.now() if sub_task.progress > 0 else None
-            # end date has value if task is completed
-            sub_task.end_date = datetime.now() if sub_task.is_completed else None
             sub_tasks.append(sub_task)
         return sub_tasks

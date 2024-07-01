@@ -9,7 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "devextreme-dist": "23.2.6",
+    "devextreme-dist": "23.2.7",
     "jquery": "^3.7.1"
   }
 }

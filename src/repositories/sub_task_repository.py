@@ -30,16 +30,8 @@ class SubTaskRepository:
             if value is not None and value != "" and key != "_sa_instance_state":
                 setattr(db_sub_task, key, value)
 
-        # if it was the first time that the user hit progress button, then set start date of the subtask
-        if sub_task.progress == 1:
-            sub_task.start_date = datetime.now()
-
         # always keep completion of subtask synch with other timing parameters
         db_sub_task.is_completed = db_sub_task.progress == AppModel.default_pomodoro_time
-
-        # check if the task was not set earlier, then synch it with completion of subtask
-        if db_sub_task.end_date is None:
-            db_sub_task.end_date = datetime.now() if db_sub_task.is_completed else None
 
     def update_sub_task_progression(self, sub_task_id: int, progress: int):
         sub_task = self.get_sub_task(sub_task_id)

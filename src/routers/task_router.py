@@ -16,13 +16,8 @@ def get_task(task_id: int, response: Response, db: Session = Depends(get_db)):
 
 
 @router.get("/tasks", status_code=status.HTTP_200_OK)
-def get_tasks(project_id, db: Session = Depends(get_db)):
+def get_tasks(db: Session = Depends(get_db)):
     return TaskRepository(db).get_tasks()
-
-
-@router.get("/tasks/{task_id}/sub_tasks", status_code=status.HTTP_200_OK)
-def get_sub_tasks(task_id: int, db: Session = Depends(get_db)):
-    return SubTaskRepository(db).get_sub_tasks(task_id)
 
 
 @router.post("/tasks", status_code=status.HTTP_201_CREATED)

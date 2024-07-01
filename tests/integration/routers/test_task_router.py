@@ -12,7 +12,7 @@ class TestTaskRouter(TestBaseRouter):
         self.task = {
             'project_id': 1,
             'title': 'create',
-            'is_completed': True,
+            'done': True,
         }
 
     def teardown_method(self, method):
